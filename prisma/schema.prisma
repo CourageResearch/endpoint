@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  passwordHash String?
+  balance      Float         @default(1000)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  positions    Position[]
+  transactions Transaction[]
+  accounts     Account[]
+  sessions     Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Trial {
+  id                      String    @id @default(cuid())
+  nctId                   String    @unique
+  title                   String
+  phase                   String?
+  status                  String?
+  sponsor                 String?
+  conditions              String[]  @default([])
+  interventions           String[]  @default([])
+  startDate               DateTime?
+  estimatedCompletionDate DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  market                  Market?
+}
+
+model Market {
+  id              String        @id @default(cuid())
+  trialId         String        @unique
+  question        String
+  status          String        @default("OPEN")
+  yesPool         Float         @default(1000)
+  noPool          Float         @default(1000)
+  resolvedOutcome String?
+  resolvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  trial           Trial         @relation(fields: [trialId], references: [id], onDelete: Cascade)
+  positions       Position[]
+  transactions    Transaction[]
+}
+
+model Position {
+  id            String   @id @default(cuid())
+  userId        String
+  marketId      String
+  yesShares     Float    @default(0)
+  noShares      Float    @default(0)
+  totalInvested Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market        Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, marketId])
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  marketId  String
+  type      String
+  shares    Float
+  price     Float
+  amount    Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market    Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+}
