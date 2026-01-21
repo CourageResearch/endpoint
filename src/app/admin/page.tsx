@@ -22,6 +22,8 @@ type MarketStats = {
   cancelled: number
 }
 
+type TableName = 'users' | 'positions' | 'transactions' | 'markets' | 'trials'
+
 export default function AdminPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -33,6 +35,9 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true)
   const [clearing, setClearing] = useState(false)
   const [clearResult, setClearResult] = useState<{ success: boolean; error?: string } | null>(null)
+  const [selectedTable, setSelectedTable] = useState<TableName | null>(null)
+  const [tableData, setTableData] = useState<Record<string, unknown>[] | null>(null)
+  const [loadingTable, setLoadingTable] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -100,6 +105,23 @@ export default function AdminPage() {
       })
     } finally {
       setSyncing(false)
+    }
+  }
+
+  const fetchTableData = async (table: TableName) => {
+    setSelectedTable(table)
+    setLoadingTable(true)
+    try {
+      const response = await fetch(`/api/admin/tables?table=${table}`)
+      if (response.ok) {
+        const data = await response.json()
+        setTableData(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch table:', error)
+      setTableData(null)
+    } finally {
+      setLoadingTable(false)
     }
   }
 
@@ -295,6 +317,73 @@ export default function AdminPage() {
             Leaderboard
           </Link>
         </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4">Database Tables</h2>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(['users', 'positions', 'transactions', 'markets', 'trials'] as TableName[]).map((table) => (
+            <button
+              key={table}
+              onClick={() => fetchTableData(table)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${
+                selectedTable === table
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {table}
+            </button>
+          ))}
+        </div>
+
+        {loadingTable && (
+          <div className="flex items-center justify-center py-8">
+            <svg className="animate-spin h-8 w-8 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          </div>
+        )}
+
+        {!loadingTable && tableData && selectedTable && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b">
+                  {tableData.length > 0 && Object.keys(tableData[0]).map((key) => (
+                    <th key={key} className="px-3 py-2 text-left font-medium text-gray-700">
+                      {key}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.map((row, i) => (
+                  <tr key={i} className="border-b hover:bg-gray-50">
+                    {Object.values(row).map((value, j) => (
+                      <td key={j} className="px-3 py-2 text-gray-600 max-w-xs truncate">
+                        {typeof value === 'object' && value !== null
+                          ? JSON.stringify(value)
+                          : String(value ?? '-')}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {tableData.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No data found</p>
+            )}
+            {tableData.length >= 100 && (
+              <p className="text-gray-500 text-center py-2 text-xs">Showing first 100 rows</p>
+            )}
+          </div>
+        )}
+
+        {!loadingTable && !tableData && selectedTable && (
+          <p className="text-red-500">Failed to load table data</p>
+        )}
       </div>
 
       <div className="bg-red-50 rounded-lg border border-red-200 p-6">
