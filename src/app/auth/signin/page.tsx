@@ -2,50 +2,68 @@
 
 import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function SignInForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/'
   const error = searchParams.get('error')
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [formError, setFormError] = useState('')
+  const [sent, setSent] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setFormError('')
 
     try {
-      const result = await signIn('credentials', {
+      await signIn('email', {
         email,
-        password,
+        callbackUrl,
         redirect: false
       })
-
-      if (result?.error) {
-        setFormError('Invalid email or password')
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
-      }
+      setSent(true)
     } catch (err) {
-      setFormError('Something went wrong. Please try again.')
+      console.error('Sign in error:', err)
     } finally {
       setLoading(false)
     }
   }
 
+  if (sent) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Check your email</h2>
+        <p className="text-gray-600 mb-4">
+          We sent a sign-in link to <strong>{email}</strong>
+        </p>
+        <p className="text-sm text-gray-500">
+          Click the link in the email to sign in. The link expires in 24 hours.
+        </p>
+        <button
+          onClick={() => setSent(false)}
+          className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
+        >
+          Use a different email
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      {(error || formError) && (
+      {error && (
         <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
-          {formError || 'Authentication failed. Please try again.'}
+          {error === 'Verification'
+            ? 'The sign-in link has expired or already been used. Please request a new one.'
+            : 'Something went wrong. Please try again.'}
         </div>
       )}
 
@@ -55,7 +73,7 @@ function SignInForm() {
             htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email
+            Email address
           </label>
           <input
             id="email"
@@ -68,42 +86,18 @@ function SignInForm() {
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Your password"
-          />
-        </div>
-
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Sending...' : 'Send magic link'}
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
-        Don&apos;t have an account?{' '}
-        <Link
-          href="/auth/signup"
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
-          Sign up
-        </Link>
-      </div>
+      <p className="mt-4 text-center text-sm text-gray-500">
+        No password needed. We&apos;ll email you a sign-in link.
+      </p>
     </div>
   )
 }
@@ -112,7 +106,6 @@ function SignInFormFallback() {
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="animate-pulse space-y-4">
-        <div className="h-10 bg-gray-200 rounded" />
         <div className="h-10 bg-gray-200 rounded" />
         <div className="h-10 bg-gray-200 rounded" />
       </div>
@@ -125,15 +118,19 @@ export default function SignInPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
+          <Link href="/" className="text-3xl font-bold text-blue-600">Endpoint</Link>
           <p className="text-gray-600 mt-2">
-            Welcome back to Endpoint
+            Sign in to start predicting
           </p>
         </div>
 
         <Suspense fallback={<SignInFormFallback />}>
           <SignInForm />
         </Suspense>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          New users are automatically created with 1,000 play money points.
+        </p>
       </div>
     </div>
   )

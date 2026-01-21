@@ -76,20 +76,12 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  href="/auth/signin"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium"
-                >
-                  Sign Up
-                </Link>
-              </>
+              <Link
+                href="/auth/signin"
+                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                Sign In
+              </Link>
             )}
           </div>
 
@@ -164,20 +156,12 @@ export default function Navbar() {
                 Sign Out
               </button>
             ) : (
-              <>
-                <Link
-                  href="/auth/signin"
-                  className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="block px-3 py-2 text-blue-600 hover:bg-gray-100 rounded"
-                >
-                  Sign Up
-                </Link>
-              </>
+              <Link
+                href="/auth/signin"
+                className="block px-3 py-2 text-blue-600 hover:bg-gray-100 rounded"
+              >
+                Sign In
+              </Link>
             )}
           </div>
         </div>

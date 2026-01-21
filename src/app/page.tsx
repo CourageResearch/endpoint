@@ -56,10 +56,10 @@ export default async function HomePage() {
             Browse Markets
           </Link>
           <Link
-            href="/auth/signup"
+            href="/auth/signin"
             className="bg-white text-blue-600 border border-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors"
           >
-            Get Started
+            Sign In
           </Link>
         </div>
       </section>
