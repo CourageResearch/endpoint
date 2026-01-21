@@ -96,7 +96,7 @@ function SignInForm() {
       </form>
 
       <p className="mt-4 text-center text-sm text-gray-500">
-        No password needed. We&apos;ll email you a sign-in link.
+        No password needed. We&apos;ll email you a magic link to sign in.
       </p>
     </div>
   )
@@ -120,7 +120,7 @@ export default function SignInPage() {
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-blue-600">Endpoint</Link>
           <p className="text-gray-600 mt-2">
-            Sign in to start predicting
+            Sign in or create an account
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function SignInPage() {
         </Suspense>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          New users are automatically created with 1,000 play money points.
+          New here? No problem - enter your email and we&apos;ll create your account with 1,000 free points.
         </p>
       </div>
     </div>
