@@ -80,7 +80,7 @@ export default function Navbar() {
                 href="/auth/signin"
                 className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium"
               >
-                Sign In
+                Get Started
               </Link>
             )}
           </div>
@@ -160,7 +160,7 @@ export default function Navbar() {
                 href="/auth/signin"
                 className="block px-3 py-2 text-blue-600 hover:bg-gray-100 rounded"
               >
-                Sign In
+                Get Started
               </Link>
             )}
           </div>
